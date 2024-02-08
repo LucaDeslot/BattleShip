@@ -70,3 +70,4 @@ StaticAnalysisResults/
 # Par exemple, fichiers de configuration contenant des secrets ou des fichiers générés par des scripts personnalisés
 appsettings.local.json
 secrets.json
+```

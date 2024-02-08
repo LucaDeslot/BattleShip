@@ -30,9 +30,10 @@ public class GameService : IGameService
                 _iaGrid[i, j] = '\0';
             }
         }
-        InitShips();
+        InitShips(_aiShips, _iaGrid);
+        InitShips(_playerShips, _playerGrid);
         InitAiAttack();
-        return this._playerShips;
+        return _playerShips;
     }
 
     private void InitAiAttack()
@@ -48,22 +49,30 @@ public class GameService : IGameService
         _aiAttacks = _aiAttacks.OrderBy(x => random.Next()).ToList();
     }
 
-    private void InitShips()
+    private void InitShips(List<Ship> ships, char[,] grid)
     {
-        Random random = new Random();
-        char[] shipTypes = { 'A', 'B', 'C', 'D', 'E', 'F' };
+        char[] shipTypes = { 'A', 'B', 'C', 'D', 'E' };
         // Initialize player ships
         foreach (var shipType in shipTypes)
         {
-            int shipSize = random.Next(1, 5);
-            _playerShips.Add(PlaceShip(_playerGrid, shipType, shipSize));
-        }
-
-        // Initialize AI ships
-        foreach (var shipTypeAi in shipTypes)
-        {
-            int shipSize = random.Next(1, 5);
-            _aiShips.Add(PlaceShip(_iaGrid, shipTypeAi, shipSize));
+            switch (shipType)
+            {
+                case 'A':
+                    ships.Add(PlaceShip(grid, shipType, 5));
+                    break;
+                case 'B':
+                    ships.Add(PlaceShip(grid, shipType, 4));
+                    break;
+                case 'C':
+                    ships.Add(PlaceShip(grid, shipType, 3));
+                    break;
+                case 'D':
+                    ships.Add(PlaceShip(grid, shipType, 3));
+                    break;
+                case 'E':
+                    ships.Add(PlaceShip(grid, shipType, 2));
+                    break;
+            }
         }
     }
 
