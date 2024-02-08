@@ -1,0 +1,72 @@
+## Dossiers de build
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Fichiers de projets et de solutions générés par Visual Studio
+*.csproj.user
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Fichiers de cache de build et autres fichiers temporaires
+.vs/
+.vscode/  # Si vous utilisez Visual Studio Code
+*.cache
+*.[Cc]ache/
+*[Tt]emp/
+*[Tt]mp/
+*.tmp
+
+## Fichiers de packages
+## Remarque : Excluez le dossier packages/ si vous ne restaurez pas les packages NuGet à chaque build
+packages/
+*.nupkg
+# NuGet Symbol Packages
+*.snupkg
+# Le fichier de verrouillage NuGet doit être inclus dans le contrôle de source : https://docs.microsoft.com/nuget/consume-packages/package-references-in-project-files
+# packages.lock.json
+
+## Fichiers de configuration spécifiques à l'outil
+.ReSharper/
+.ReSharperCaches/
+_ReSharper.*/
+*.DotSettings.user
+
+## Fichiers de couverture de code et de profilage
+*.coverage
+*.coveragexml
+*.dotCover
+
+## Fichiers de base de données SQL Server
+*.mdf
+*.ldf
+*.ndf
+
+## Dossiers de sortie de publication
+publish/
+
+## Fichiers générés par l'IDE Rider
+.idea/
+
+## Dossier contenant des fichiers générés par NCrunch
+_NCrunch_*
+
+## Fichiers de sauvegarde créés par Windows
+*~
+*.bak
+*.swp
+
+## Fichiers de sortie de l'outil de documentation Sandcastle
+DocumentationHelp/
+
+## Dossier de fichiers de sortie de l'analyse statique
+StaticAnalysisResults/
+
+## Autres fichiers/dossiers spécifiques au projet
+# Ajoutez ici des règles pour les fichiers et dossiers spécifiques à votre projet qui ne devraient pas être inclus
+# Par exemple, fichiers de configuration contenant des secrets ou des fichiers générés par des scripts personnalisés
+appsettings.local.json
+secrets.json

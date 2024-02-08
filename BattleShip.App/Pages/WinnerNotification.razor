@@ -1,0 +1,26 @@
+
+@code {
+    public bool ShowNotification { get; set; } = false;
+    private string _text;
+    
+    public void Show(string text)
+    {
+        _text = text;
+        ShowNotification = true;
+        StateHasChanged(); // Notifie Blazor que l'état a changé et que l'UI doit être rafraîchie.
+    }
+
+    public void Hide()
+    {
+        ShowNotification = false;
+        StateHasChanged(); // Optionnel si cette méthode est appelée en réponse à un événement utilisateur qui déclenche déjà un rafraîchissement.
+    }
+}
+
+
+@if (ShowNotification)
+{
+    <div class="alert alert-success" role="alert">
+        @_text
+    </div>
+}
