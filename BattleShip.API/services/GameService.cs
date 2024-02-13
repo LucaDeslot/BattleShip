@@ -1,3 +1,5 @@
+using BattleShip.API.data;
+
 namespace BattleShip.API.services;
 
 public class GameService : IGameService
@@ -9,7 +11,9 @@ public class GameService : IGameService
     private readonly List<Ship> _aiShips = [];
     
     private List<Coordinates> _aiAttacks = new List<Coordinates>();
-    private int _aiAttackIndex = 0;
+    
+    private bool _improvedIa = true;
+    private ImprovedIaAttackStrategy _improvedIaAttackStrategy;
 
     public Guid GameId { get; }
 
@@ -185,9 +189,30 @@ public class GameService : IGameService
     }
     private void IaAttack(AttackResult result)
     {
-        int y = _aiAttacks[_aiAttackIndex].Y;
-        int x = _aiAttacks[_aiAttackIndex].X;
-        _aiAttackIndex++;
+        int y = _aiAttacks[0].Y;
+        int x = _aiAttacks[0].X;
+        if (_improvedIaAttackStrategy != null)
+        {
+            Coordinates? attack = _improvedIaAttackStrategy.GetNextAttack();
+            if (attack != null)
+            {
+                x = attack.X;
+                y = attack.Y;
+                Coordinates? coordinatesToDelete = _aiAttacks.Find(coordinates => coordinates.X == x && coordinates.Y == y);
+                if (coordinatesToDelete != null)
+                {
+                    _aiAttacks.Remove(coordinatesToDelete);
+                }
+            }
+            else
+            {
+                _improvedIaAttackStrategy = null;
+            }
+        }
+        else
+        {
+            _aiAttacks.RemoveAt(0);
+        }
         
         char shipValue = _playerGrid[x, y];
         if(shipValue == '\0')
@@ -196,8 +221,12 @@ public class GameService : IGameService
             result.IAAttackResult = 'M';
             result.IACoordinates.X = x;
             result.IACoordinates.Y = y;
-        } else if(shipValue != 'H')
+        } else if(shipValue != 'H') //Un bateau a été touché
         {
+            if (_improvedIaAttackStrategy == null)
+            {
+                _improvedIaAttackStrategy = new ImprovedIaAttackStrategy(x, y, _playerGrid);
+            }
             _playerGrid[x, y] = 'H';
             result.IAAttackResult = 'H';
             result.IACoordinates.X = x;
@@ -209,6 +238,7 @@ public class GameService : IGameService
                 if(ship.Size == 0)
                 {
                     _playerShips.Remove(ship);
+                    _improvedIaAttackStrategy = null;
                 }
             }
         }
