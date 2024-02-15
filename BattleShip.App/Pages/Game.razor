@@ -1,9 +1,8 @@
-@page "/game"
+@page "/"
 
-@using BattleShip.App.Pages
-@inject HttpClient Http
 @inject BattleShipService BattleShipService
 @inject Blazored.LocalStorage.ILocalStorageService ProtectedLocalStorage
+@inject NavigationManager NavigationManager
 
 @code {
     private const int GridSize = 10;
@@ -15,11 +14,8 @@
     protected override async Task OnInitializedAsync()
     {
         gameId = await ProtectedLocalStorage.GetItemAsync<string>("gameId");
-        Console.WriteLine(gameId);
-
         if (gameId == null)
         {
-            Console.WriteLine("GameId is null");
             var response = await BattleShipService.StartGame();
             gameId = response.Id.ToString();
             InitialiseGrille(response.Ships);
@@ -31,6 +27,14 @@
             var response = await BattleShipService.GetGame(gameId);
             InitialiseGrille(response.Ships);
         }
+        
+        // for (int row = 0; row < GridSize; row++)
+        // {
+        //     for (int col = 0; col < GridSize; col++)
+        //     {
+        //         HandleClick(row, col);
+        //     }
+        // }
     }
 
 
@@ -111,21 +115,20 @@
 }
 
 @code {
-    private WinnerNotification winnerNotification;
-
-    private void CheckForWin(AttackResult response)
+    private async void CheckForWin(AttackResult response)
     {
         if (response.Winner == "Player")
         {
-            winnerNotification.Show("Vous avez gagné !");
+            await ProtectedLocalStorage.RemoveItemAsync("gameId");
+            NavigationManager.NavigateTo("/endgame?winner=true");
         }
         else if (response.Winner == "IA")
         {
-            winnerNotification.Show("Vous avez perdu !");
+            await ProtectedLocalStorage.RemoveItemAsync("gameId");
+            NavigationManager.NavigateTo("/endgame?winner=false");
         }
     }
 }
-<WinnerNotification @ref="winnerNotification" />
 
 <div style="display: flex; justify-content: space-around;">
     <div>
@@ -159,6 +162,5 @@
         </table>
     </div>
 </div>
-
 
 <button @onclick="RestartGame">Restart</button>

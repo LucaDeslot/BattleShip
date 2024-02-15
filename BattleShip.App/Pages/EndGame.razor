@@ -1,0 +1,77 @@
+@page "/endgame"
+
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager NavigationManager
+
+@code {
+    private bool Winner { get; set; }
+
+    protected override void OnInitialized()
+    {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("winner", out var winner))
+        {
+            Winner = Convert.ToBoolean(winner.First());
+            Console.WriteLine($"Winner: {Winner}");
+        }
+    }
+    
+    private void RestartGame()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}
+
+<div class="endgame-container">
+    @if (Winner)
+    {
+        <h2>Félicitations, vous avez gagné ! 🎉</h2>
+        <p>Vous avez brillamment maîtrisé le jeu.</p>
+    }
+    else
+    {
+        <h2>Dommage, vous avez perdu. 😢</h2>
+        <p>N'abandonnez pas, chaque défaite est une leçon.</p>
+    }
+    <button class="btn btn-primary" @onclick="RestartGame">Essayer à nouveau</button>
+</div>
+
+<style>
+    .endgame-container {
+        text-align: center;
+        padding: 50px;
+        margin: 20px auto;
+        max-width: 600px;
+        background-color: #f0f0f0;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .endgame-container h2 {
+        color: #4CAF50;
+    }
+
+    .endgame-container h2:nth-child(3) {
+        color: #f44336; /* Rouge pour la défaite */
+    }
+
+    .endgame-container p {
+        font-size: 18px;
+        color: #333;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 18px;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+</style>
