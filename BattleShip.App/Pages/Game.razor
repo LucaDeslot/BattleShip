@@ -1,0 +1,164 @@
+@page "/game"
+
+@using BattleShip.App.Pages
+@inject HttpClient Http
+@inject BattleShipService BattleShipService
+@inject Blazored.LocalStorage.ILocalStorageService ProtectedLocalStorage
+
+@code {
+    private const int GridSize = 10;
+    private char[,] grille = new char[GridSize, GridSize];
+    private char[,] grilleIA = new char[GridSize, GridSize];
+    private string gameId;
+
+    // Initialise la grille avec des valeurs par défaut
+    protected override async Task OnInitializedAsync()
+    {
+        gameId = await ProtectedLocalStorage.GetItemAsync<string>("gameId");
+        Console.WriteLine(gameId);
+
+        if (gameId == null)
+        {
+            Console.WriteLine("GameId is null");
+            var response = await BattleShipService.StartGame();
+            gameId = response.Id.ToString();
+            InitialiseGrille(response.Ships);
+            await ProtectedLocalStorage.SetItemAsync<string>("gameId", response.Id.ToString());
+        }
+        else
+        {
+            Console.WriteLine("GameId is not null");
+            var response = await BattleShipService.GetGame(gameId);
+            InitialiseGrille(response.Ships);
+        }
+    }
+
+
+    private void InitialiseGrille(List<Ship> ships)
+    {
+        for (int row = 0; row < GridSize; row++)
+        {
+            for (int col = 0; col < GridSize; col++)
+            {
+                // Initialise la grille du joueur
+                Ship? ship = getShipAtCoordinates(row, col, ships); 
+                if (ship != null) 
+                { 
+                    grille[row, col] = ship.Type; 
+                } else { 
+                    grille[row, col] = '\0'; 
+                }
+
+                // Initialise la grille de l'IA
+                grilleIA[row, col] = '\0';
+            }
+        } 
+    }
+    private Ship? getShipAtCoordinates(int x, int y, List<Ship> ships)
+    {
+        foreach (var ship in ships)
+        {
+            if (ship.IsHorizontal)
+            {
+                if (x == ship.StartRow && y < ship.StartCol + ship.Size && y >= ship.StartCol)
+                {
+                    return ship;
+                }
+
+            }
+            else // Vertical
+            {
+                if (y == ship.StartCol && x < ship.StartRow + ship.Size && x >= ship.StartRow)
+                {
+                    return ship;
+                }
+            }
+        }
+        return null;
+    }
+
+    // Gère le clic sur une cellule de la grille
+    private async void HandleClick(int row, int col)
+    {
+        if (grilleIA[row, col] == '\0')
+        {
+            var response = await BattleShipService.Attack(gameId, row, col);
+            CheckForWin(response);
+            grilleIA[row, col] = response.PlayerAttackResult;
+            grille[response.IACoordinates.X, response.IACoordinates.Y] = response.IAAttackResult;
+            StateHasChanged();
+        }
+    }
+
+    // Retourne le contenu à afficher pour une cellule donnée
+    private string GetCellDisplay(char cellValue)
+    {
+        switch (cellValue)
+        {
+            case 'M': return "⚪"; // Tir manqué
+            case 'H': return "🔴"; // Tir réussi
+            case '\0': return string.Empty; // Cellule vide
+            default: return cellValue.ToString(); // Navire
+        }
+    }
+
+    // Redémarre le jeu
+    private async Task RestartGame()
+    {
+        await ProtectedLocalStorage.RemoveItemAsync("gameId"); //TODO: Supprimer la partie de l'API
+        await OnInitializedAsync();
+    }
+}
+
+@code {
+    private WinnerNotification winnerNotification;
+
+    private void CheckForWin(AttackResult response)
+    {
+        if (response.Winner == "Player")
+        {
+            winnerNotification.Show("Vous avez gagné !");
+        }
+        else if (response.Winner == "IA")
+        {
+            winnerNotification.Show("Vous avez perdu !");
+        }
+    }
+}
+<WinnerNotification @ref="winnerNotification" />
+
+<div style="display: flex; justify-content: space-around;">
+    <div>
+        <h3>Grille du Joueur</h3>
+        <table class="battleship-grid">
+            @for (int row = 0; row < GridSize; row++)
+            {
+                <tr>
+                    @for (int col = 0; col < GridSize; col++)
+                    {
+                        <td>@GetCellDisplay(grille[row, col])</td>
+                    }
+                </tr>
+            }
+        </table>
+    </div>
+    <div>
+        <h3>Grille de l'IA</h3>
+        <table class="battleship-grid">
+            @for (int row = 0; row < GridSize; row++)
+            {
+                var currentRow = row;
+                <tr>
+                    @for (int col = 0; col < GridSize; col++)
+                    {
+                        var currentCol = col;
+                        <td @onclick="(() => HandleClick(currentRow, currentCol))">@GetCellDisplay(grilleIA[currentRow, currentCol])</td>
+                    }
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+
+
+<button @onclick="RestartGame">Restart</button>
