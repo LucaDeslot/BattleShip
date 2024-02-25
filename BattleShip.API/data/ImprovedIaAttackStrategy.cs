@@ -6,14 +6,14 @@ public class ImprovedIaAttackStrategy
     
     private List<Coordinates> _aiAttacks = new List<Coordinates>();
     
-    public ImprovedIaAttackStrategy(int x, int y, char[,] playerGrid)
+    public ImprovedIaAttackStrategy(int x, int y, char[,] playerGrid, int gridSize)
     {
         // Générer des attaques à gauche et à droite de la cible
         for (var dx = -4; dx <= 4; dx++)
         {
             if (dx != 0) // Exclut la cellule centrale
             {
-                if(x + dx >= 0 && x + dx < 10)
+                if(x + dx >= 0 && x + dx < gridSize)
                     if (playerGrid[x + dx, y] != 'M' && playerGrid[x + dx, y] != 'H')
                         _aiAttacks.Add(new Coordinates { X = x + dx, Y = y });
             }
@@ -24,7 +24,7 @@ public class ImprovedIaAttackStrategy
         {
             if (dy != 0) // Exclut la cellule centrale
             {
-                if(y + dy >= 0 && y + dy < 10)
+                if(y + dy >= 0 && y + dy < gridSize)
                     if (playerGrid[x, y + dy] != 'M' && playerGrid[x, y + dy] != 'H')
                         _aiAttacks.Add(new Coordinates { X = x, Y = y + dy });
             }
