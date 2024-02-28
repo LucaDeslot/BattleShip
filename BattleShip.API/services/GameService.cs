@@ -17,6 +17,8 @@ public class GameService : IGameService
     
     private int _gridSize = 10;
     private int _difficulty;
+    
+    private List<MoveHistory> _moveHistories = new List<MoveHistory>();
 
     public Guid GameId { get; }
 
@@ -172,11 +174,13 @@ public class GameService : IGameService
         AttackResult result = new();
         char shipValue = _iaGrid[x, y];
         if(shipValue == '\0')
-        {
+        { // Aucun bateau n'a été touché
+            RegisterHistory(x, y, true, 'M');
             _iaGrid[x, y] = 'M';
             result.PlayerAttackResult = 'M';
         } else if(shipValue != 'H')
-        {
+        { // Un bateau a été touché
+            RegisterHistory(x, y, true, 'H');
             _iaGrid[x, y] = 'H';
             result.PlayerAttackResult = 'H';
             Ship? ship = _aiShips.Find(s => s.Type == shipValue);
@@ -194,6 +198,13 @@ public class GameService : IGameService
         CheckWinner(result);
         return result;
     }
+
+    private void RegisterHistory(int x, int y, bool player, char result)
+    {
+        MoveHistory moveHistory = new MoveHistory(GameId, _moveHistories.Count, player, x, y, result);
+        _moveHistories.Add(moveHistory);
+    }
+
     private void IaAttack(AttackResult result)
     {
         int y = _aiAttacks[0].Y;
@@ -224,6 +235,7 @@ public class GameService : IGameService
         char shipValue = _playerGrid[x, y];
         if(shipValue == '\0')
         {
+            RegisterHistory(x, y, false, 'M');
             _playerGrid[x, y] = 'M';
             result.IAAttackResult = 'M';
             result.IACoordinates.X = x;
@@ -237,6 +249,7 @@ public class GameService : IGameService
                 if(shipValue == _improvedIaAttackStrategy.GetShipHit())
                     _improvedIaAttackStrategy.Hit(x, y);
             }
+            RegisterHistory(x, y, false, 'H');
             _playerGrid[x, y] = 'H';
             result.IAAttackResult = 'H';
             result.IACoordinates.X = x;
@@ -273,5 +286,10 @@ public class GameService : IGameService
     public int GetGridSize()
     {
         return _gridSize;
+    }
+    
+    public List<MoveHistory> GetMoveHistories()
+    {
+        return _moveHistories;
     }
 }

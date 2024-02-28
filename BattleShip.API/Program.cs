@@ -70,4 +70,17 @@ app.MapGet("/game/{id}", (
     }
 }).WithOpenApi();
 
+app.MapGet("/history/{id}", (
+    [FromRoute] Guid id) =>
+{
+    try
+    {
+        return gameServices[id].GetMoveHistories();
+    }
+    catch (Exception e)
+    {
+        return null;
+    }
+}).WithOpenApi();
+
 app.Run();

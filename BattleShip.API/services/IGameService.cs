@@ -1,3 +1,5 @@
+using BattleShip.API.data;
+
 public interface IGameService
 {
 
@@ -8,4 +10,6 @@ public interface IGameService
     List<Ship> GetShips();
 
     int GetGridSize();
+    
+    List<MoveHistory> GetMoveHistories();
 }
