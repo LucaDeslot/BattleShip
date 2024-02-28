@@ -6,7 +6,12 @@ public class AttackRequestValidator : AbstractValidator<AttackRequest>
     public AttackRequestValidator()
     {
         RuleFor(x => x.Id).NotEmpty();
-        RuleFor(x => x.X).InclusiveBetween(0, 10);
-        RuleFor(x => x.Y).InclusiveBetween(0, 10);
+        RuleFor(x => x.GridSize).Must(BeValidGridSize).WithMessage("GridSize should be 10 or 15");
+    }
+
+    private bool BeValidGridSize(int gridSize)
+    {
+        return gridSize == 10 || gridSize == 15;
     }
 }
+
