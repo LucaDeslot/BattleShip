@@ -12,4 +12,8 @@ public interface IGameService
     int GetGridSize();
     
     List<MoveHistory> GetMoveHistories();
+    
+    List<Ship> GetInitialPlayerShips();
+    
+    DateTime GetGameDate();
 }

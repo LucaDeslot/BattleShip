@@ -12,13 +12,6 @@
     private string gameId;
     [Parameter] public int difficulty { get; set; }
     
-    private async Task OnLoadedChange() //TODO: Remove
-    {
-        Console.WriteLine("isLoaded value changed to: ");
-        Console.WriteLine("grilleIA: " + grilleIA.Length);
-        Console.WriteLine("grille: " + grille.Length);
-    }
-    
     // Initialise la grille avec des valeurs par défaut
     protected override async Task OnInitializedAsync()
     {
@@ -39,7 +32,7 @@
             await ProtectedLocalStorage.SetItemAsync<string>("gameId", response.Id.ToString());
             InitialiseGrille(response.Ships);
         }
-        await OnLoadedChange();
+        await PlayAutomatically();
     }
 
 
@@ -71,7 +64,7 @@
         {
             if (ship.IsHorizontal)
             {
-                if (x == ship.StartRow && y < ship.StartCol + ship.Size && y >= ship.StartCol)
+                if (x == ship.StartRow && y < ship.StartCol + ship.CurrentSize && y >= ship.StartCol)
                 {
                     return ship;
                 }
@@ -79,7 +72,7 @@
             }
             else // Vertical
             {
-                if (y == ship.StartCol && x < ship.StartRow + ship.Size && x >= ship.StartRow)
+                if (y == ship.StartCol && x < ship.StartRow + ship.CurrentSize && x >= ship.StartRow)
                 {
                     return ship;
                 }
@@ -125,13 +118,25 @@
     {
         if (response.Winner == "Player")
         {
-            await ProtectedLocalStorage.RemoveItemAsync("gameId");
             NavigationManager.NavigateTo("/endgame?winner=true");
         }
         else if (response.Winner == "IA")
         {
-            await ProtectedLocalStorage.RemoveItemAsync("gameId");
             NavigationManager.NavigateTo("/endgame?winner=false");
+        }
+    }
+    
+    private async Task PlayAutomatically()
+    {
+        for (int i = 0; i < _gridSize; i++)
+        {
+            for (int j = 0; j < _gridSize; j++)
+            {
+                if (grilleIA[i, j] == '\0')
+                {
+                    HandleClick(i, j);
+                }
+            }
         }
     }
 }

@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 var builder = WebApplication.CreateBuilder(args);
 Dictionary<Guid, IGameService> gameServices = [];
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<IGameService, GameService>();
@@ -62,7 +60,7 @@ app.MapGet("/game/{id}", (
 {
     try
     {
-        return new { id = id, Ships = gameServices[id].GetShips(), gridSize = gameServices[id].GetGridSize() };
+        return new { id = id, Ships = gameServices[id].GetInitialPlayerShips(), gridSize = gameServices[id].GetGridSize() };
     }
     catch (Exception e)
     {

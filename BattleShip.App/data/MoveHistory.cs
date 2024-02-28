@@ -9,6 +9,7 @@ public class MoveHistory
     public int col { get; set; }
     public char Result { get; set; }
     public int GridSize { get; set; }
+    public char Type { get; set; }
     
     public MoveHistory(Guid gameId, int turn, bool player, int row, int col, char result, int gridSize)
     {

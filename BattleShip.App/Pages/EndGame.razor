@@ -1,7 +1,10 @@
 @page "/endgame"
 
 @using Microsoft.AspNetCore.WebUtilities
+@using BattleShip.API.data
 @inject NavigationManager NavigationManager
+@inject BattleShipService BattleShipService
+@inject Blazored.LocalStorage.ILocalStorageService ProtectedLocalStorage
 
 @code {
     private bool Winner { get; set; }
@@ -20,6 +23,12 @@
     {
         NavigationManager.NavigateTo("/");
     }
+    
+    private async void ShowHistory()
+    {
+        string gameId = await ProtectedLocalStorage.GetItemAsync<string>("gameId");
+        NavigationManager.NavigateTo($"/history/{gameId}");
+    }
 }
 
 <div class="endgame-container">
@@ -33,6 +42,7 @@
         <h2>Dommage, vous avez perdu. 😢</h2>
         <p>N'abandonnez pas, chaque défaite est une leçon.</p>
     }
+    <button class="btn btn-primary" @onclick="ShowHistory">Afficher l'historique</button>
     <button class="btn btn-primary" @onclick="RestartGame">Essayer à nouveau</button>
 </div>
 
