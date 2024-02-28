@@ -14,6 +14,9 @@ public class GameService : IGameService
     
     private bool _improvedIa = true;
     private ImprovedIaAttackStrategy _improvedIaAttackStrategy;
+    
+    private int _gridSize = 10;
+    private int _difficulty;
 
     public Guid GameId { get; }
 
@@ -22,13 +25,17 @@ public class GameService : IGameService
         GameId = Guid.NewGuid();
     }
 
-    public List<Ship> GridGeneration()
+    public List<Ship> GridGeneration(int difficulty)
     {
-        _playerGrid = new char[10, 10];
-        _iaGrid = new char[10, 10];
-        for (var i = 0; i < 10; i++)
+        _difficulty = difficulty;
+        
+        if(difficulty > 1) _gridSize = 15;
+        
+        _playerGrid = new char[_gridSize, _gridSize];
+        _iaGrid = new char[_gridSize, _gridSize];
+        for (var i = 0; i < _gridSize; i++)
         {
-            for (var j = 0; j < 10; j++)
+            for (var j = 0; j < _gridSize; j++)
             {
                 _playerGrid[i, j] = '\0';
                 _iaGrid[i, j] = '\0';
@@ -43,9 +50,9 @@ public class GameService : IGameService
     private void InitAiAttack()
     {
         Random random = new Random();
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < _gridSize; i++)
         {
-            for (var j = 0; j < 10; j++)
+            for (var j = 0; j < _gridSize; j++)
             {
                 _aiAttacks.Add(new Coordinates { X = i, Y = j });
             }
@@ -88,9 +95,9 @@ public class GameService : IGameService
 
         while (!isPlaced)
         {
-            int row = random.Next(0, 10);
-            int col = random.Next(0, 10);
-            bool isHorizontal = random.Next(0, 2) == 0;
+            int row = random.Next(0, _gridSize -1);
+            int col = random.Next(0, _gridSize -1);
+            bool isHorizontal = random.Next(0, 1) == 0;
             if (CanPlaceShip(grid, row, col, shipSize, isHorizontal))
             {
                 for (int i = 0; i < shipSize; i++)
@@ -129,7 +136,7 @@ public class GameService : IGameService
     {
         if (isHorizontal)
         {
-            if (col + shipSize > 10) // Dépassement de la grille
+            if (col + shipSize > _gridSize - 1) // Dépassement de la grille
             {
                 return false;
             }
@@ -144,7 +151,7 @@ public class GameService : IGameService
         }
         else
         {
-            if (row + shipSize > 10)
+            if (row + shipSize > _gridSize - 1)
             {
                 return false;
             }
@@ -225,7 +232,10 @@ public class GameService : IGameService
         {
             if (_improvedIaAttackStrategy == null)
             {
-                _improvedIaAttackStrategy = new ImprovedIaAttackStrategy(x, y, _playerGrid);
+                _improvedIaAttackStrategy = new ImprovedIaAttackStrategy(x, y, _playerGrid, _gridSize, _difficulty);
+            } else {
+                if(shipValue == _improvedIaAttackStrategy.GetShipHit())
+                    _improvedIaAttackStrategy.Hit(x, y);
             }
             _playerGrid[x, y] = 'H';
             result.IAAttackResult = 'H';
@@ -258,5 +268,10 @@ public class GameService : IGameService
         {
             result.Winner = "Player";
         }
+    }
+    
+    public int GetGridSize()
+    {
+        return _gridSize;
     }
 }

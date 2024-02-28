@@ -35,12 +35,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/start", (IGameService IGameService) =>
+app.MapGet("/start/{difficulty}", (
+        [FromRoute] int difficulty,
+        IGameService IGameService) =>
 {
     GameService gameService = (GameService) IGameService;
     gameServices.Add(gameService.GameId, gameService);
-    List<Ship> grid = gameService.GridGeneration();
-    return new { id = gameService.GameId, Ships = grid};
+    List<Ship> grid = gameService.GridGeneration(difficulty);
+    return new { id = gameService.GameId, Ships = grid, gridSize = gameService.GetGridSize()};
 })
 .WithOpenApi();
 
@@ -58,7 +60,14 @@ app.MapGet("/attack/{id}/{x}/{y}", ( //TODO:  handle id
 app.MapGet("/game/{id}", (
     [FromRoute] Guid id) =>
 {
-    return new { id = id, Ships = gameServices[id].GetShips() };
+    try
+    {
+        return new { id = id, Ships = gameServices[id].GetShips(), gridSize = gameServices[id].GetGridSize() };
+    }
+    catch (Exception e)
+    {
+        return null; 
+    }
 }).WithOpenApi();
 
 app.Run();

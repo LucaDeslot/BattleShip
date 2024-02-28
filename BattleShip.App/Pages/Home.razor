@@ -1,0 +1,26 @@
+@page "/"
+@inject NavigationManager NavigationManager
+
+<div class="container">
+    <h1>Bataille Navale</h1>
+
+    <div>
+        <label for="difficulty">Choisir la difficulté :</label>
+        <select id="difficulty" @bind="_selectedDifficulty">
+            <option value="1">1 - Facile</option>
+            <option value="2">2 - Moyen</option>
+            <option value="3">3 - Difficile</option>
+        </select>
+    </div>
+
+    <button class="btn" @onclick="StartGame">Démarrer le Jeu</button>
+</div>
+
+@code {
+    private int _selectedDifficulty = 1; // La difficulté sélectionnée, 1 par défaut
+
+    private void StartGame()
+    {
+        NavigationManager.NavigateTo($"/newGame/{_selectedDifficulty}");
+    }
+}

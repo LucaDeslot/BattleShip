@@ -9,8 +9,8 @@ public class BattleShipService {
         _httpClient = httpClient;
     }
 
-    public Task<StartGameResponse> StartGame() {
-        var response = _httpClient.GetFromJsonAsync<StartGameResponse>("start");
+    public Task<StartGameResponse> StartGame(int difficulty) {
+        var response = _httpClient.GetFromJsonAsync<StartGameResponse>($"start/{difficulty}");
         return response;
     }
 

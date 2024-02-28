@@ -1,48 +1,55 @@
-@page "/"
+@page "/newGame/{difficulty:int}"
+@page "/resumeGame"
 
 @inject BattleShipService BattleShipService
 @inject Blazored.LocalStorage.ILocalStorageService ProtectedLocalStorage
 @inject NavigationManager NavigationManager
 
 @code {
-    private const int GridSize = 10;
-    private char[,] grille = new char[GridSize, GridSize];
-    private char[,] grilleIA = new char[GridSize, GridSize];
+    private int _gridSize = 10;
+    private char[,] grille = new char[10, 10];
+    private char[,] grilleIA = new char[10, 10];
     private string gameId;
-
+    [Parameter] public int difficulty { get; set; }
+    
+    private async Task OnLoadedChange() //TODO: Remove
+    {
+        Console.WriteLine("isLoaded value changed to: ");
+        Console.WriteLine("grilleIA: " + grilleIA.Length);
+        Console.WriteLine("grille: " + grille.Length);
+    }
+    
     // Initialise la grille avec des valeurs par défaut
     protected override async Task OnInitializedAsync()
     {
-        gameId = await ProtectedLocalStorage.GetItemAsync<string>("gameId");
-        if (gameId == null)
+        string currentUrl = NavigationManager.Uri;
+        if (currentUrl.Contains("resumeGame"))
         {
-            var response = await BattleShipService.StartGame();
-            gameId = response.Id.ToString();
-            InitialiseGrille(response.Ships);
-            await ProtectedLocalStorage.SetItemAsync<string>("gameId", response.Id.ToString());
-        }
-        else
-        {
-            Console.WriteLine("GameId is not null");
+            gameId = await ProtectedLocalStorage.GetItemAsync<string>("gameId");
             var response = await BattleShipService.GetGame(gameId);
+            _gridSize = response.gridSize;
             InitialiseGrille(response.Ships);
         }
-        
-        // for (int row = 0; row < GridSize; row++)
-        // {
-        //     for (int col = 0; col < GridSize; col++)
-        //     {
-        //         HandleClick(row, col);
-        //     }
-        // }
+        else // new game
+        {
+            var response = await BattleShipService.StartGame(difficulty);
+            gameId = response.Id.ToString();
+            Console.WriteLine(response.gridSize);
+            _gridSize = response.gridSize; 
+            await ProtectedLocalStorage.SetItemAsync<string>("gameId", response.Id.ToString());
+            InitialiseGrille(response.Ships);
+        }
+        await OnLoadedChange();
     }
 
 
     private void InitialiseGrille(List<Ship> ships)
     {
-        for (int row = 0; row < GridSize; row++)
+        grille = new char[_gridSize, _gridSize];
+        grilleIA = new char[_gridSize, _gridSize];
+        for (int row = 0; row < _gridSize; row++)
         {
-            for (int col = 0; col < GridSize; col++)
+            for (int col = 0; col < _gridSize; col++)
             {
                 // Initialise la grille du joueur
                 Ship? ship = getShipAtCoordinates(row, col, ships); 
@@ -90,6 +97,7 @@
             CheckForWin(response);
             grilleIA[row, col] = response.PlayerAttackResult;
             grille[response.IACoordinates.X, response.IACoordinates.Y] = response.IAAttackResult;
+            Console.WriteLine(grille);
             StateHasChanged();
         }
     }
@@ -112,9 +120,7 @@
         await ProtectedLocalStorage.RemoveItemAsync("gameId"); //TODO: Supprimer la partie de l'API
         await OnInitializedAsync();
     }
-}
-
-@code {
+    
     private async void CheckForWin(AttackResult response)
     {
         if (response.Winner == "Player")
@@ -134,10 +140,10 @@
     <div>
         <h3>Grille du Joueur</h3>
         <table class="battleship-grid">
-            @for (int row = 0; row < GridSize; row++)
+            @for (int row = 0; row < _gridSize; row++)
             {
                 <tr>
-                    @for (int col = 0; col < GridSize; col++)
+                    @for (int col = 0; col < _gridSize; col++)
                     {
                         <td>@GetCellDisplay(grille[row, col])</td>
                     }
@@ -148,11 +154,11 @@
     <div>
         <h3>Grille de l'IA</h3>
         <table class="battleship-grid">
-            @for (int row = 0; row < GridSize; row++)
+            @for (int row = 0; row < _gridSize; row++)
             {
                 var currentRow = row;
                 <tr>
-                    @for (int col = 0; col < GridSize; col++)
+                    @for (int col = 0; col < _gridSize; col++)
                     {
                         var currentCol = col;
                         <td @onclick="(() => HandleClick(currentRow, currentCol))">@GetCellDisplay(grilleIA[currentRow, currentCol])</td>
