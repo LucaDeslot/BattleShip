@@ -42,7 +42,7 @@ app.MapGet("/start/{difficulty}", (
     GameService gameService = (GameService) IGameService;
     gameServices.Add(gameService.GameId, gameService);
     List<Ship> grid = gameService.GridGeneration(difficulty);
-    return new { id = gameService.GameId, Ships = grid};
+    return new { id = gameService.GameId, Ships = grid, gridSize = gameService.GetGridSize()};
 })
 .WithOpenApi();
 

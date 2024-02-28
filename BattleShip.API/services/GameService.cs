@@ -16,6 +16,7 @@ public class GameService : IGameService
     private ImprovedIaAttackStrategy _improvedIaAttackStrategy;
     
     private int _gridSize = 10;
+    private int _difficulty;
 
     public Guid GameId { get; }
 
@@ -26,6 +27,8 @@ public class GameService : IGameService
 
     public List<Ship> GridGeneration(int difficulty)
     {
+        _difficulty = difficulty;
+        
         if(difficulty > 1) _gridSize = 15;
         
         _playerGrid = new char[_gridSize, _gridSize];
@@ -92,9 +95,9 @@ public class GameService : IGameService
 
         while (!isPlaced)
         {
-            int row = random.Next(0, _gridSize);
-            int col = random.Next(0, _gridSize);
-            bool isHorizontal = random.Next(0, 2) == 0;
+            int row = random.Next(0, _gridSize -1);
+            int col = random.Next(0, _gridSize -1);
+            bool isHorizontal = random.Next(0, 1) == 0;
             if (CanPlaceShip(grid, row, col, shipSize, isHorizontal))
             {
                 for (int i = 0; i < shipSize; i++)
@@ -133,7 +136,7 @@ public class GameService : IGameService
     {
         if (isHorizontal)
         {
-            if (col + shipSize > _gridSize) // Dépassement de la grille
+            if (col + shipSize > _gridSize - 1) // Dépassement de la grille
             {
                 return false;
             }
@@ -148,7 +151,7 @@ public class GameService : IGameService
         }
         else
         {
-            if (row + shipSize > _gridSize)
+            if (row + shipSize > _gridSize - 1)
             {
                 return false;
             }
@@ -229,7 +232,10 @@ public class GameService : IGameService
         {
             if (_improvedIaAttackStrategy == null)
             {
-                _improvedIaAttackStrategy = new ImprovedIaAttackStrategy(x, y, _playerGrid, _gridSize);
+                _improvedIaAttackStrategy = new ImprovedIaAttackStrategy(x, y, _playerGrid, _gridSize, _difficulty);
+            } else {
+                if(shipValue == _improvedIaAttackStrategy.GetShipHit())
+                    _improvedIaAttackStrategy.Hit(x, y);
             }
             _playerGrid[x, y] = 'H';
             result.IAAttackResult = 'H';

@@ -7,11 +7,18 @@
 
 @code {
     private int _gridSize = 10;
-    private char[,] grille;
-    private char[,] grilleIA;
+    private char[,] grille = new char[10, 10];
+    private char[,] grilleIA = new char[10, 10];
     private string gameId;
     [Parameter] public int difficulty { get; set; }
-
+    
+    private async Task OnLoadedChange() //TODO: Remove
+    {
+        Console.WriteLine("isLoaded value changed to: ");
+        Console.WriteLine("grilleIA: " + grilleIA.Length);
+        Console.WriteLine("grille: " + grille.Length);
+    }
+    
     // Initialise la grille avec des valeurs par défaut
     protected override async Task OnInitializedAsync()
     {
@@ -27,10 +34,12 @@
         {
             var response = await BattleShipService.StartGame(difficulty);
             gameId = response.Id.ToString();
-            _gridSize = response.gridSize;
-            InitialiseGrille(response.Ships);
+            Console.WriteLine(response.gridSize);
+            _gridSize = response.gridSize; 
             await ProtectedLocalStorage.SetItemAsync<string>("gameId", response.Id.ToString());
+            InitialiseGrille(response.Ships);
         }
+        await OnLoadedChange();
     }
 
 
@@ -88,6 +97,7 @@
             CheckForWin(response);
             grilleIA[row, col] = response.PlayerAttackResult;
             grille[response.IACoordinates.X, response.IACoordinates.Y] = response.IAAttackResult;
+            Console.WriteLine(grille);
             StateHasChanged();
         }
     }
@@ -110,9 +120,7 @@
         await ProtectedLocalStorage.RemoveItemAsync("gameId"); //TODO: Supprimer la partie de l'API
         await OnInitializedAsync();
     }
-}
-
-@code {
+    
     private async void CheckForWin(AttackResult response)
     {
         if (response.Winner == "Player")
