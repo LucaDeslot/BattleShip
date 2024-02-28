@@ -1,4 +1,6 @@
+using BattleShip.API.data;
 using BattleShip.API.services;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +9,7 @@ Dictionary<Guid, IGameService> gameServices = [];
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<IGameService, GameService>();
+
 
 builder.Services.AddCors(options =>
 {
@@ -18,6 +21,8 @@ builder.Services.AddCors(options =>
                 .AllowAnyMethod();
         });
 });
+
+builder.Services.AddTransient<IValidator<AttackRequest>, AttackRequestValidator>();
 
 var app = builder.Build();
 
@@ -44,16 +49,28 @@ app.MapGet("/start/{difficulty}", (
 })
 .WithOpenApi();
 
-app.MapGet("/attack/{id}/{x}/{y}", ( //TODO:  handle id
+
+app.MapGet("/attack/{id}/{x}/{y}", async (
     [FromRoute] Guid id,
     [FromRoute] int x,
     [FromRoute] int y,
+    IValidator<AttackRequest> validator,
     IGameService IGameService) =>
 {
+    var request = new AttackRequest { Id = id, X = x, Y = y };
+    
+    var validationResult = await validator.ValidateAsync(request);
+
+    if (!validationResult.IsValid)
+    {
+        return null;
+    }
     GameService gameService = (GameService) IGameService;
     AttackResult result = gameServices[id].Attack(x, y);
     return result;
+
 }).WithOpenApi();
+
 
 app.MapGet("/game/{id}", (
     [FromRoute] Guid id) =>
