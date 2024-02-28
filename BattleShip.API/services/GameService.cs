@@ -9,6 +9,7 @@ public class GameService : IGameService
 
     private readonly List<Ship> _playerShips = [];
     private readonly List<Ship> _aiShips = [];
+    private List<Ship> _InitialPlayerShips = [];
     
     private List<Coordinates> _aiAttacks = new List<Coordinates>();
     
@@ -17,6 +18,8 @@ public class GameService : IGameService
     
     private int _gridSize = 10;
     private int _difficulty;
+    
+    private DateTime _gameDate = DateTime.Now;
     
     private List<MoveHistory> _moveHistories = new List<MoveHistory>();
 
@@ -44,7 +47,7 @@ public class GameService : IGameService
             }
         }
         InitShips(_aiShips, _iaGrid);
-        InitShips(_playerShips, _playerGrid);
+        _InitialPlayerShips = new List<Ship>(InitShips(_playerShips, _playerGrid));
         InitAiAttack();
         return _playerShips;
     }
@@ -62,7 +65,7 @@ public class GameService : IGameService
         _aiAttacks = _aiAttacks.OrderBy(x => random.Next()).ToList();
     }
 
-    private void InitShips(List<Ship> ships, char[,] grid)
+    private List<Ship> InitShips(List<Ship> ships, char[,] grid)
     {
         char[] shipTypes = { 'A', 'B', 'C', 'D', 'E' };
         // Initialize player ships
@@ -87,6 +90,8 @@ public class GameService : IGameService
                     break;
             }
         }
+
+        return ships;
     }
 
     private Ship PlaceShip(char[,] grid, char shipType, int shipSize)
@@ -111,6 +116,7 @@ public class GameService : IGameService
                             ship.Type = shipType;
                             ship.StartRow = row;
                             ship.StartCol = col + i;
+                            ship.CurrentSize = shipSize;
                             ship.Size = shipSize;
                             ship.IsHorizontal = true;
                         }
@@ -122,7 +128,7 @@ public class GameService : IGameService
                             ship.Type = shipType;
                             ship.StartRow = row + i;
                             ship.StartCol = col;
-                            ship.Size = shipSize;
+                            ship.CurrentSize = shipSize;
                             ship.IsHorizontal = false;
                         }
                     }
@@ -168,6 +174,11 @@ public class GameService : IGameService
         }
         return true;
     }
+    
+    public List<Ship> GetInitialPlayerShips()
+    {
+        return _InitialPlayerShips;
+    }
 
     public AttackResult Attack(int x, int y)
     {
@@ -186,8 +197,8 @@ public class GameService : IGameService
             Ship? ship = _aiShips.Find(s => s.Type == shipValue);
             if(ship != null)
             {
-                ship.Size--;
-                if(ship.Size == 0)
+                ship.CurrentSize--;
+                if(ship.CurrentSize == 0)
                 {
                     _aiShips.Remove(ship);
                 }
@@ -201,7 +212,7 @@ public class GameService : IGameService
 
     private void RegisterHistory(int x, int y, bool player, char result)
     {
-        MoveHistory moveHistory = new MoveHistory(GameId, _moveHistories.Count, player, x, y, result);
+        MoveHistory moveHistory = new MoveHistory(GameId, _moveHistories.Count, player, x, y, result, _gridSize);
         _moveHistories.Add(moveHistory);
     }
 
@@ -257,8 +268,8 @@ public class GameService : IGameService
             Ship? ship = _playerShips.Find(s => s.Type == shipValue);
             if(ship != null)
             {
-                ship.Size--;
-                if(ship.Size == 0)
+                ship.CurrentSize--;
+                if(ship.CurrentSize == 0)
                 {
                     _playerShips.Remove(ship);
                     _improvedIaAttackStrategy = null;
@@ -291,5 +302,10 @@ public class GameService : IGameService
     public List<MoveHistory> GetMoveHistories()
     {
         return _moveHistories;
+    }
+    
+    public DateTime GetGameDate()
+    {
+        return _gameDate;
     }
 }

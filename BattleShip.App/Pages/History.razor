@@ -1,0 +1,172 @@
+@page "/history/{gameId}"
+@using BattleShip.API.data
+
+@inject BattleShipService BattleShipService
+
+@code {
+    
+    [Parameter] public string GameId { get; set; }
+    private int currentTurn = -1;
+    private int maxTurns;
+    private List<MoveHistory> _moveHistories;
+    private int _gridSize;
+    private char[,] grilleReplay = new char[10, 10];
+    private char[,] grilleReplayAI = new char[10,10];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _moveHistories = await BattleShipService.GetMoveHistory(GameId); 
+        Console.WriteLine("test : "+_moveHistories[0].row+" "+_moveHistories[0].col+" "+_moveHistories[0].Result+" "+_moveHistories[0].Type+" "+_moveHistories[0].Player+" "+_moveHistories[0].GridSize);
+        maxTurns = _moveHistories.Count;
+        _gridSize = _moveHistories[0].GridSize; //TODO: par API de préférence
+        grilleReplay = new char[_gridSize, _gridSize];
+        grilleReplayAI = new char[_gridSize, _gridSize];
+        var gameResponse = await BattleShipService.GetGame(GameId);
+        InitialiseGrille(gameResponse.Ships);
+        StateHasChanged();
+    }
+    
+    private void IncrementTurn()
+    {
+        if (currentTurn < maxTurns)
+        {
+            currentTurn++;
+            SetGridState(_moveHistories[currentTurn], true);
+        }
+    }
+    
+    private void DecrementTurn()
+    {
+        if (currentTurn > 0)
+        {
+            SetGridState(_moveHistories[currentTurn], false);
+            currentTurn--;
+        }
+    }
+
+    private void SetGridState(MoveHistory moveHistory, bool forward)
+    {
+        if (moveHistory.Player)
+        {
+            if (forward)
+            {
+                moveHistory.Type = grilleReplayAI[moveHistory.row, moveHistory.col];
+                grilleReplayAI[moveHistory.row, moveHistory.col] = moveHistory.Result;
+            } else {
+                grilleReplayAI[moveHistory.row, moveHistory.col] = moveHistory.Type;
+            }
+                
+        } 
+        else
+        {
+            if (forward)
+            {
+                moveHistory.Type = grilleReplay[moveHistory.row, moveHistory.col];
+                grilleReplay[moveHistory.row, moveHistory.col] = moveHistory.Result;
+            } else {
+                grilleReplay[moveHistory.row, moveHistory.col] = moveHistory.Type;
+            }
+                
+        }
+        StateHasChanged();
+    }
+    
+    private string GetCellDisplay(char cellValue)
+    {
+        switch (cellValue)
+        {
+            case 'M': return "⚪"; // Tir manqué
+            case 'H': return "🔴"; // Tir réussi
+            case '\0': return string.Empty; // Cellule vide
+            default: return cellValue.ToString(); // Pour gérer d'autres types si nécessaire
+        }
+    }
+    
+    private Ship? getShipAtCoordinates(int x, int y, List<Ship> ships) //TODO: à déplacer dans une classe utilitaire
+    {
+        foreach (var ship in ships)
+        {
+            if (ship.IsHorizontal)
+            {
+                if (x == ship.StartRow && y < ship.StartCol + ship.Size && y >= ship.StartCol)
+                {
+                    Console.WriteLine("Ship found : "+ship.Type+" "+ship.StartRow+" "+ship.StartCol+" "+ship.Size+" "+ship.IsHorizontal);
+                    return ship;
+                }
+
+            }
+            else // Vertical
+            {
+                Console.WriteLine("Vertical ship found : "+ship.Type+" "+ship.StartRow+" "+ship.StartCol+" "+ship.Size+" "+ship.IsHorizontal);
+                if (y == ship.StartCol && x < ship.StartRow + ship.Size && x >= ship.StartRow)
+                {
+                    Console.WriteLine("Ship found : "+ship.Type+" "+ship.StartRow+" "+ship.StartCol+" "+ship.Size+" "+ship.IsHorizontal);
+                    return ship;
+                }
+            }
+        }
+        return null;
+    }
+    
+    private void InitialiseGrille(List<Ship> ships) //TODO: à déplacer dans une classe utilitaire
+    {
+        grilleReplay = new char[_gridSize, _gridSize];
+        grilleReplayAI = new char[_gridSize, _gridSize];
+        for (int row = 0; row < _gridSize; row++)
+        {
+            for (int col = 0; col < _gridSize; col++)
+            {
+                // Initialise la grille du joueur
+                Ship? ship = getShipAtCoordinates(row, col, ships); 
+                if (ship != null) 
+                { 
+                    grilleReplay[row, col] = ship.Type; 
+                } else { 
+                    grilleReplay[row, col] = '\0'; 
+                }
+                // Initialise la grille de l'IA
+                grilleReplayAI[row, col] = '\0';
+            }
+        } 
+    }
+
+}
+
+<h3>Historique de la partie</h3>
+
+<button @onclick="DecrementTurn">Coup précédent</button>
+<button @onclick="IncrementTurn">Prochain coup</button>
+@* <button @onclick="ResetReplay">Recommencer</button> *@
+
+<div style="display: flex; justify-content: space-around;">
+    <div>
+        <h3>Grille du Joueur</h3>
+        <table class="battleship-grid">
+            @for (int row = 0; row < _gridSize; row++)
+            {
+                <tr>
+                    @for (int col = 0; col < _gridSize; col++)
+                    {
+                        <td>@GetCellDisplay(grilleReplay[row, col])</td>
+                    }
+                </tr>
+            }
+        </table>
+    </div>
+    <div>
+        <h3>Grille de l'IA</h3>
+        <table class="battleship-grid">
+            @for (int row = 0; row < _gridSize; row++)
+            {
+                var currentRow = row;
+                <tr>
+                    @for (int col = 0; col < _gridSize; col++)
+                    {
+                        var currentCol = col;
+                        <td>@GetCellDisplay(grilleReplayAI[currentRow, currentCol])</td>
+                    }
+                </tr>
+            }
+        </table>
+    </div>
+</div>
