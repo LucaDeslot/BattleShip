@@ -16,16 +16,22 @@ builder.Services.AddCors(options =>
             builder.WithOrigins("http://localhost:9000")
                 .AllowAnyHeader()
                 .AllowAnyMethod();
+            builder.WithOrigins("https://localhost:9000")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
         });
 });
 
 var app = builder.Build();
 
+app.UseGrpcWeb(); 
 
 // Configure the HTTP request pipeline.
 app.UseCors();
 
-app.MapGrpcService<GameServiceGrpcImpl>();
+app.MapGrpcService<GameServiceGrpcImpl>()
+    .EnableGrpcWeb()
+    .RequireCors();
 
 if (app.Environment.IsDevelopment())
 {
@@ -34,27 +40,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.MapGet("/start/{difficulty}", (
-        [FromRoute] int difficulty,
-        GameServiceRegistry gameServiceRegistry) =>
-{
-    GameService gameService = new GameService();
-    gameServiceRegistry.AddGameService(gameService.GameId, gameService);
-    List<Ship> grid = gameService.GridGeneration(difficulty);
-    return new { id = gameService.GameId, Ships = grid, gridSize = gameService.GetGridSize()};
-})
-.WithOpenApi();
-
-app.MapGet("/attack/{id}/{x}/{y}", (
-    [FromRoute] Guid id,
-    [FromRoute] int x,
-    [FromRoute] int y,
-    GameServiceRegistry gameServiceRegistry) =>
-{
-    AttackResult result = gameServiceRegistry.GetGameService(id.ToString()).Attack(x, y);
-    return result;
-}).WithOpenApi();
 
 app.MapGet("/game/{id}", (
     [FromRoute] Guid id,

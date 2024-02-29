@@ -1,10 +1,9 @@
 @page "/history/{gameId}"
 @using BattleShip.API.data
 
-@inject BattleShipService BattleShipService
+@inject BattleShipServiceImpl BattleShipService
 
 @code {
-    
     [Parameter] public string GameId { get; set; }
     private int currentTurn = -1;
     private int maxTurns;

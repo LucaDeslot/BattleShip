@@ -1,21 +1,21 @@
 syntax = "proto3";
 
 service BattleShipService {
-    rpc StartGame (StartGameRequest) returns (StartGameResponse);
-    rpc Attack (AttackRequest) returns (AttackResultGrpc);
+    rpc StartGame (StartGameRequestGrpc) returns (StartGameResponseGrpc);
+    rpc Attack (AttackRequestGrpc) returns (AttackResultGrpc);
 }
 
-message StartGameRequest {
+message StartGameRequestGrpc {
     int32 difficulty = 1;
 }
 
-message StartGameResponse {
+message StartGameResponseGrpc {
     string game_id = 1;
     repeated ShipGrpc ships = 2;
     int32 grid_size = 3;
 }
 
-message AttackRequest {
+message AttackRequestGrpc {
     string game_id = 1;
     int32 row = 2;
     int32 col = 3;
@@ -37,6 +37,7 @@ message ShipGrpc {
     string type = 1;
     int32 start_row = 2;
     int32 start_col = 3;
-    int32 size = 4;
-    bool is_horizontal = 5;
+    int32 current_size = 4;
+    int32 size = 5;
+    bool is_horizontal = 6;
 }

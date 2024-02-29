@@ -13,13 +13,13 @@ public class GameServiceGrpcImpl : BattleShipService.BattleShipServiceBase
         _gameServiceRegistry = gameServiceRegistry;
     }
     
-    public override Task<StartGameResponse> StartGame(StartGameRequest request, ServerCallContext context)
+    public override Task<StartGameResponseGrpc> StartGame(StartGameRequestGrpc request, ServerCallContext context)
     {
         GameService gameService = new GameService();
         _gameServiceRegistry.AddGameService(gameService.GameId, gameService);
         List<Ship> grid = gameService.GridGeneration(request.Difficulty);
         
-        var response = new StartGameResponse
+        var response = new StartGameResponseGrpc
         {
             GameId = gameService.GameId.ToString(),
             Ships = {ConvertShipsToProto(grid)},
@@ -28,7 +28,7 @@ public class GameServiceGrpcImpl : BattleShipService.BattleShipServiceBase
         return Task.FromResult(response);
     }
 
-    public override Task<AttackResultGrpc> Attack(AttackRequest request, ServerCallContext context)
+    public override Task<AttackResultGrpc> Attack(AttackRequestGrpc request, ServerCallContext context)
     {
         IGameService gameService = _gameServiceRegistry.GetGameService(request.GameId);
         AttackResult attackResult = gameService.Attack(request.Row, request.Col);
@@ -63,6 +63,7 @@ public class GameServiceGrpcImpl : BattleShipService.BattleShipServiceBase
             Type = ship.Type.ToString(),
             StartRow = ship.StartRow,
             StartCol = ship.StartCol,
+            CurrentSize = ship.CurrentSize,
             Size = ship.Size,
             IsHorizontal = ship.IsHorizontal
         };

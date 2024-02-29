@@ -1,7 +1,9 @@
 @page "/newGame/{difficulty:int}"
 @page "/resumeGame"
+@using BattleShip.App.GRPCUtils
 
-@inject BattleShipService BattleShipService
+@inject BattleShipService.BattleShipServiceClient BattleShipService
+@inject BattleShipServiceImpl BattleShipHttpService
 @inject Blazored.LocalStorage.ILocalStorageService ProtectedLocalStorage
 @inject NavigationManager NavigationManager
 
@@ -19,20 +21,19 @@
         if (currentUrl.Contains("resumeGame"))
         {
             gameId = await ProtectedLocalStorage.GetItemAsync<string>("gameId");
-            var response = await BattleShipService.GetGame(gameId);
+            var response = await BattleShipHttpService.GetGame(gameId);
             _gridSize = response.gridSize;
             InitialiseGrille(response.Ships);
         }
         else // new game
         {
-            var response = await BattleShipService.StartGame(difficulty);
-            gameId = response.Id.ToString();
-            Console.WriteLine(response.gridSize);
-            _gridSize = response.gridSize; 
-            await ProtectedLocalStorage.SetItemAsync<string>("gameId", response.Id.ToString());
-            InitialiseGrille(response.Ships);
+            var response = await BattleShipService.StartGameAsync(new StartGameRequestGrpc{Difficulty = difficulty});
+            gameId = response.GameId;
+            _gridSize = response.GridSize; 
+            await ProtectedLocalStorage.SetItemAsync<string>("gameId", gameId);
+            InitialiseGrille(GRPCUtils.DeserializeShips(response.Ships));
         }
-        await PlayAutomatically();
+        //await PlayAutomatically();
     }
 
 
@@ -86,10 +87,11 @@
     {
         if (grilleIA[row, col] == '\0')
         {
-            var response = await BattleShipService.Attack(gameId, row, col);
-            CheckForWin(response);
-            grilleIA[row, col] = response.PlayerAttackResult;
-            grille[response.IACoordinates.X, response.IACoordinates.Y] = response.IAAttackResult;
+            var response = await BattleShipService.AttackAsync(GRPCUtils.SerializeAttackRequest(gameId, row, col));
+            AttackResult attackResult = GRPCUtils.DeserializeAttackResult(response);
+            CheckForWin(attackResult);
+            grilleIA[row, col] = attackResult.PlayerAttackResult;
+            grille[attackResult.IACoordinates.X, attackResult.IACoordinates.Y] = attackResult.IAAttackResult;
             Console.WriteLine(grille);
             StateHasChanged();
         }
