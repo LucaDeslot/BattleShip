@@ -28,6 +28,11 @@
         string gameId = await ProtectedLocalStorage.GetItemAsync<string>("gameId");
         NavigationManager.NavigateTo($"/history/{gameId}");
     }
+    
+    private void ShowLeaderboard()
+    {
+        NavigationManager.NavigateTo("/leaderboard");
+    }
 }
 
 <div class="endgame-container">
@@ -43,6 +48,7 @@
     }
     <button class="btn btn-primary" @onclick="ShowHistory">Afficher l'historique</button>
     <button class="btn btn-primary" @onclick="RestartGame">Essayer à nouveau</button>
+    <button class="btn btn-primary" @onclick="ShowLeaderboard">Afficher leaderboard</button>
 </div>
 
 <style>

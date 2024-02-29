@@ -1,5 +1,4 @@
-@page "/newGame/{difficulty:int}"
-@using BattleShip.App.GRPCUtils
+@page "/newGame/{difficulty:int}/{username}"
 
 @inject BattleShipService.BattleShipServiceClient BattleShipService
 @inject Blazored.LocalStorage.ILocalStorageService ProtectedLocalStorage
@@ -11,6 +10,7 @@
     private char[,] grilleIA = new char[10, 10];
     private string gameId;
     [Parameter] public int difficulty { get; set; }
+    [Parameter] public string username { get; set; }
     
     protected override async Task OnInitializedAsync()
     {
@@ -50,11 +50,6 @@
         {
             if (ship.IsHorizontal)
             {
-                Console.WriteLine("Horizontal");
-                Console.WriteLine("startrow"+ship.StartRow);
-                Console.WriteLine("startcol"+ship.StartCol);
-                Console.WriteLine("currentsize"+ship.CurrentSize);
-                Console.WriteLine("Size"+ship.Size);
                 if (x == ship.StartRow && y < ship.StartCol + ship.CurrentSize && y >= ship.StartCol)
                 {
                     return ship;
@@ -63,11 +58,6 @@
             }
             else // Vertical
             {
-                Console.WriteLine("Vertical");
-                Console.WriteLine("startrow"+ship.StartRow);
-                Console.WriteLine("startcol"+ship.StartCol);
-                Console.WriteLine("currentsize"+ship.CurrentSize);
-                Console.WriteLine("Size"+ship.Size);
                 if (y == ship.StartCol && x < ship.StartRow + ship.CurrentSize && x >= ship.StartRow)
                 {
                     return ship;
@@ -82,7 +72,7 @@
     {
         if (grilleIA[row, col] == '\0')
         {
-            var response = await BattleShipService.AttackAsync(GRPCUtils.SerializeAttackRequest(gameId, row, col));
+            var response = await BattleShipService.AttackAsync(GRPCUtils.SerializeAttackRequest(gameId, row, col, username));
             AttackResult attackResult = GRPCUtils.DeserializeAttackResult(response);
             CheckForWin(attackResult);
             grilleIA[row, col] = attackResult.PlayerAttackResult;
