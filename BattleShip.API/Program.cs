@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 Dictionary<Guid, IGameService> gameServices = [];
+List<PlayerScore> leaderboard = [];
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -17,7 +18,7 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(
         builder =>
         {
-            builder.WithOrigins("http://localhost:9000")
+            builder.WithOrigins("httpS://localhost:9000")
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
@@ -37,22 +38,32 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapGet("/start/{difficulty}", (
+
+app.MapGet("/start/{difficulty}/{username}", (
         [FromRoute] int difficulty,
+        [FromRoute] string username,
         IGameService IGameService) =>
-{
-    GameService gameService = (GameService) IGameService;
-    gameServices.Add(gameService.GameId, gameService);
-    List<Ship> grid = gameService.GridGeneration(difficulty);
-    return new { id = gameService.GameId, Ships = grid, gridSize = gameService.GetGridSize()};
-})
-.WithOpenApi();
+    {
+        bool userExistsInLeaderboard = leaderboard.Any(player => player.PlayerName == username);
+        
+        if (!userExistsInLeaderboard)
+        {
+            leaderboard.Add(new PlayerScore { PlayerName = username, VictoryNumber = 0 });
+        }
+
+        GameService gameService = (GameService) IGameService;
+        gameServices.Add(gameService.GameId, gameService);
+        List<Ship> grid = gameService.GridGeneration(difficulty);
+        return new { id = gameService.GameId, Ships = grid, gridSize = gameService.GetGridSize()};
+    })
+    .WithOpenApi();
 
 
-app.MapGet("/attack/{id}/{x}/{y}", async (
+app.MapGet("/attack/{id}/{x}/{y}/{username}", async (
     [FromRoute] Guid id,
     [FromRoute] int x,
     [FromRoute] int y,
+    [FromRoute] string username,
     IValidator<AttackRequest> validator) =>
 {
     var request = new AttackRequest { Id = id, X = x, Y = y, GridSize = gameServices[id].GetGridSize()};
@@ -62,8 +73,17 @@ app.MapGet("/attack/{id}/{x}/{y}", async (
     {
         return Results.BadRequest(validationResult.ToDictionary());
     }
-    return Results.Ok(gameServices[id].Attack(x, y));
+    AttackResult resultAttack = gameServices[id].Attack(x, y);
+    
+    int index = leaderboard.FindIndex(p => p.PlayerName == username);
+    if (index != -1 && resultAttack.Winner == "Player")
+    {
+        leaderboard[index].VictoryNumber++;
+    }
+
+    return Results.Ok(resultAttack);
 }).WithOpenApi();
+
 
 
 app.MapGet("/game/{id}", (
@@ -79,6 +99,7 @@ app.MapGet("/game/{id}", (
     }
 }).WithOpenApi();
 
+
 app.MapGet("/history/{id}", (
     [FromRoute] Guid id) =>
 {
@@ -91,5 +112,12 @@ app.MapGet("/history/{id}", (
         return null;
     }
 }).WithOpenApi();
+
+
+app.MapGet("/leaderboard", () =>
+{
+    return leaderboard;
+}).WithOpenApi();
+
 
 app.Run();

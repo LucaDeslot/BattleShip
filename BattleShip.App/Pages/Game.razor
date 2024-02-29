@@ -1,4 +1,4 @@
-@page "/newGame/{difficulty:int}"
+@page "/newGame/{difficulty:int}/{username}"
 @page "/resumeGame"
 
 @inject BattleShipService BattleShipService
@@ -11,6 +11,7 @@
     private char[,] grilleIA = new char[10, 10];
     private string gameId;
     [Parameter] public int difficulty { get; set; }
+    [Parameter] public string username { get; set; }
     
     // Initialise la grille avec des valeurs par défaut
     protected override async Task OnInitializedAsync()
@@ -25,14 +26,14 @@
         }
         else // new game
         {
-            var response = await BattleShipService.StartGame(difficulty);
+            var response = await BattleShipService.StartGame(difficulty, username);
             gameId = response.Id.ToString();
             Console.WriteLine(response.gridSize);
             _gridSize = response.gridSize; 
             await ProtectedLocalStorage.SetItemAsync<string>("gameId", response.Id.ToString());
             InitialiseGrille(response.Ships);
         }
-        await PlayAutomatically();
+        // await PlayAutomatically();
     }
 
 
@@ -86,7 +87,8 @@
     {
         if (grilleIA[row, col] == '\0')
         {
-            var response = await BattleShipService.Attack(gameId, row, col);
+            Console.WriteLine("username : " + username);
+            var response = await BattleShipService.Attack(gameId, row, col, username);
             CheckForWin(response);
             grilleIA[row, col] = response.PlayerAttackResult;
             grille[response.IACoordinates.X, response.IACoordinates.Y] = response.IAAttackResult;

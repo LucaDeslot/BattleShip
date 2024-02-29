@@ -13,14 +13,30 @@
         </select>
     </div>
 
+    <!-- Champ pour saisir le nom d'utilisateur -->
+    <div>
+        <label for="username">Nom d'utilisateur :</label>
+        <input type="text" id="username" @bind="_username" />
+    </div>
+
+    <br/>
     <button class="btn" @onclick="StartGame">Démarrer le Jeu</button>
+    <br/>
+    <button class="btn" @onclick="ShowLeaderboard">Voir le leaderboard</button>
 </div>
 
 @code {
     private int _selectedDifficulty = 1; // La difficulté sélectionnée, 1 par défaut
+    private string _username; // Le nom d'utilisateur saisi
 
     private void StartGame()
     {
-        NavigationManager.NavigateTo($"/newGame/{_selectedDifficulty}");
+        // Ajoutez le nom d'utilisateur dans l'URL de navigation vers la page newGame
+        NavigationManager.NavigateTo($"/newGame/{_selectedDifficulty}/{_username}");
+    }
+    
+    private void ShowLeaderboard()
+    {
+        NavigationManager.NavigateTo("/leaderboard");
     }
 }
