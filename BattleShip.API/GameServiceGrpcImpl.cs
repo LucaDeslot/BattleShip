@@ -44,6 +44,7 @@ public class GameServiceGrpcImpl : BattleShipService.BattleShipServiceBase
 
     public override Task<AttackResultGrpc> Attack(AttackRequestGrpc request, ServerCallContext context)
     {
+        // Validation
         var validator = new AttackRequestValidator();
         ValidationResult validationResult = validator.Validate(request);
         
