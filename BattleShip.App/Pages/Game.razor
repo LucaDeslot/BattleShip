@@ -1,9 +1,7 @@
 @page "/newGame/{difficulty:int}"
-@page "/resumeGame"
 @using BattleShip.App.GRPCUtils
 
 @inject BattleShipService.BattleShipServiceClient BattleShipService
-@inject BattleShipServiceImpl BattleShipHttpService
 @inject Blazored.LocalStorage.ILocalStorageService ProtectedLocalStorage
 @inject NavigationManager NavigationManager
 
@@ -14,26 +12,13 @@
     private string gameId;
     [Parameter] public int difficulty { get; set; }
     
-    // Initialise la grille avec des valeurs par défaut
     protected override async Task OnInitializedAsync()
     {
-        string currentUrl = NavigationManager.Uri;
-        if (currentUrl.Contains("resumeGame"))
-        {
-            gameId = await ProtectedLocalStorage.GetItemAsync<string>("gameId");
-            var response = await BattleShipHttpService.GetGame(gameId);
-            _gridSize = response.gridSize;
-            InitialiseGrille(response.Ships);
-        }
-        else // new game
-        {
-            var response = await BattleShipService.StartGameAsync(new StartGameRequestGrpc{Difficulty = difficulty});
-            gameId = response.GameId;
-            _gridSize = response.GridSize; 
-            await ProtectedLocalStorage.SetItemAsync<string>("gameId", gameId);
-            InitialiseGrille(GRPCUtils.DeserializeShips(response.Ships));
-        }
-        //await PlayAutomatically();
+        var response = await BattleShipService.StartGameAsync(new StartGameRequestGrpc{Difficulty = difficulty});
+        gameId = response.GameId;
+        _gridSize = response.GridSize; 
+        await ProtectedLocalStorage.SetItemAsync<string>("gameId", gameId);
+        InitialiseGrille(GRPCUtils.DeserializeShips(response.Ships));
     }
 
 
@@ -45,7 +30,7 @@
         {
             for (int col = 0; col < _gridSize; col++)
             {
-                // Initialise la grille du joueur
+                // Grille Joueur
                 Ship? ship = getShipAtCoordinates(row, col, ships); 
                 if (ship != null) 
                 { 
@@ -54,7 +39,7 @@
                     grille[row, col] = '\0'; 
                 }
 
-                // Initialise la grille de l'IA
+                // Grille IA
                 grilleIA[row, col] = '\0';
             }
         } 
@@ -119,7 +104,6 @@
         }
     }
 
-    // Redémarre le jeu
     private async Task RestartGame()
     {
         await ProtectedLocalStorage.RemoveItemAsync("gameId"); //TODO: Supprimer la partie de l'API
