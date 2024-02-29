@@ -68,7 +68,6 @@ public class GameService : IGameService
     private List<Ship> InitShips(List<Ship> ships, char[,] grid)
     {
         char[] shipTypes = { 'A', 'B', 'C', 'D', 'E' };
-        // Initialize player ships
         foreach (var shipType in shipTypes)
         {
             switch (shipType)
@@ -104,7 +103,7 @@ public class GameService : IGameService
         {
             int row = random.Next(0, _gridSize -1);
             int col = random.Next(0, _gridSize -1);
-            bool isHorizontal = random.Next(0, 1) == 0;
+            bool isHorizontal = random.Next(0, 2) == 1;
             if (CanPlaceShip(grid, row, col, shipSize, isHorizontal))
             {
                 for (int i = 0; i < shipSize; i++)
@@ -129,6 +128,7 @@ public class GameService : IGameService
                             ship.StartRow = row + i;
                             ship.StartCol = col;
                             ship.CurrentSize = shipSize;
+                            ship.Size = shipSize;
                             ship.IsHorizontal = false;
                         }
                     }

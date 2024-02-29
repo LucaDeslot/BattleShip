@@ -65,6 +65,11 @@
         {
             if (ship.IsHorizontal)
             {
+                Console.WriteLine("Horizontal");
+                Console.WriteLine("startrow"+ship.StartRow);
+                Console.WriteLine("startcol"+ship.StartCol);
+                Console.WriteLine("currentsize"+ship.CurrentSize);
+                Console.WriteLine("Size"+ship.Size);
                 if (x == ship.StartRow && y < ship.StartCol + ship.CurrentSize && y >= ship.StartCol)
                 {
                     return ship;
@@ -73,6 +78,11 @@
             }
             else // Vertical
             {
+                Console.WriteLine("Vertical");
+                Console.WriteLine("startrow"+ship.StartRow);
+                Console.WriteLine("startcol"+ship.StartCol);
+                Console.WriteLine("currentsize"+ship.CurrentSize);
+                Console.WriteLine("Size"+ship.Size);
                 if (y == ship.StartCol && x < ship.StartRow + ship.CurrentSize && x >= ship.StartRow)
                 {
                     return ship;

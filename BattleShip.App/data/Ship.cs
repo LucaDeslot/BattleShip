@@ -11,7 +11,7 @@ public class Ship
         Type = shipGrpc.Type[0];
         StartRow = shipGrpc.StartRow;
         StartCol = shipGrpc.StartCol;
-        //TODO: CurrentSize
+        CurrentSize = shipGrpc.CurrentSize;
         Size = shipGrpc.Size;
         IsHorizontal = shipGrpc.IsHorizontal;
     }
