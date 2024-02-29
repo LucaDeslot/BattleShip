@@ -1,7 +1,5 @@
 using Google.Protobuf.Collections;
 
-namespace BattleShip.App.GRPCUtils;
-
 public class GRPCUtils
 {
     public static List<Ship> DeserializeShips(RepeatedField<ShipGrpc> response)
@@ -16,13 +14,14 @@ public class GRPCUtils
         return ships;
     }
     
-    public static AttackRequestGrpc SerializeAttackRequest(string gameId, int x, int y)
+    public static AttackRequestGrpc SerializeAttackRequest(string gameId, int x, int y, string username)
     {
         return new AttackRequestGrpc
         {
             GameId = gameId,
             Row = x,
-            Col = y
+            Col = y,
+            Username = username
         };
     }
     

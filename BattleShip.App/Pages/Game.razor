@@ -14,7 +14,7 @@
     
     protected override async Task OnInitializedAsync()
     {
-        var response = await BattleShipService.StartGameAsync(new StartGameRequestGrpc{Difficulty = difficulty});
+        var response = await BattleShipService.StartGameAsync(new StartGameRequestGrpc{Difficulty = difficulty, Username = username});
         gameId = response.GameId;
         _gridSize = response.GridSize; 
         await ProtectedLocalStorage.SetItemAsync<string>("gameId", gameId);

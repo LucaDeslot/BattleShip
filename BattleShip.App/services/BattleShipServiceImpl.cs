@@ -17,4 +17,9 @@ public class BattleShipServiceImpl {
         List<MoveHistory> response = await _httpClient.GetFromJsonAsync<List<MoveHistory>>($"history/{gameId}") ?? new ();
         return response;
     } 
+    
+    public async Task<List<PlayerScore>> GetLeaderboard() {
+        List<PlayerScore> response = await _httpClient.GetFromJsonAsync<List<PlayerScore>>("/leaderboard") ?? new ();
+        return response;
+    }
 }
