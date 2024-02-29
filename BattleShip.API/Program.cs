@@ -2,11 +2,11 @@ using BattleShip.API.services;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
-Dictionary<Guid, IGameService> gameServices = [];
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddTransient<IGameService, GameService>();
+builder.Services.AddGrpc();
+builder.Services.AddSingleton<GameServiceRegistry>();
 
 builder.Services.AddCors(options =>
 {
@@ -25,6 +25,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.UseCors();
 
+app.MapGrpcService<GameServiceGrpcImpl>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -35,10 +37,10 @@ app.UseHttpsRedirection();
 
 app.MapGet("/start/{difficulty}", (
         [FromRoute] int difficulty,
-        IGameService IGameService) =>
+        GameServiceRegistry gameServiceRegistry) =>
 {
-    GameService gameService = (GameService) IGameService;
-    gameServices.Add(gameService.GameId, gameService);
+    GameService gameService = new GameService();
+    gameServiceRegistry.AddGameService(gameService.GameId, gameService);
     List<Ship> grid = gameService.GridGeneration(difficulty);
     return new { id = gameService.GameId, Ships = grid, gridSize = gameService.GetGridSize()};
 })
@@ -48,19 +50,19 @@ app.MapGet("/attack/{id}/{x}/{y}", ( //TODO:  handle id
     [FromRoute] Guid id,
     [FromRoute] int x,
     [FromRoute] int y,
-    IGameService IGameService) =>
+    GameServiceRegistry gameServiceRegistry) =>
 {
-    GameService gameService = (GameService) IGameService;
-    AttackResult result = gameServices[id].Attack(x, y);
+    AttackResult result = gameServiceRegistry.GetGameService(id).Attack(x, y);
     return result;
 }).WithOpenApi();
 
 app.MapGet("/game/{id}", (
-    [FromRoute] Guid id) =>
+    [FromRoute] Guid id,
+    GameServiceRegistry gameServiceRegistry) =>
 {
     try
     {
-        return new { id = id, Ships = gameServices[id].GetInitialPlayerShips(), gridSize = gameServices[id].GetGridSize() };
+        return new { id = id, Ships = gameServiceRegistry.GetGameService(id).GetInitialPlayerShips(), gridSize = gameServiceRegistry.GetGameService(id).GetGridSize() };
     }
     catch (Exception e)
     {
@@ -69,11 +71,12 @@ app.MapGet("/game/{id}", (
 }).WithOpenApi();
 
 app.MapGet("/history/{id}", (
-    [FromRoute] Guid id) =>
+    [FromRoute] Guid id,
+    GameServiceRegistry gameServiceRegistry) =>
 {
     try
     {
-        return gameServices[id].GetMoveHistories();
+        return gameServiceRegistry.GetGameService(id).GetMoveHistories();
     }
     catch (Exception e)
     {
