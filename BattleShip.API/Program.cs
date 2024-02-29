@@ -46,13 +46,13 @@ app.MapGet("/start/{difficulty}", (
 })
 .WithOpenApi();
 
-app.MapGet("/attack/{id}/{x}/{y}", ( //TODO:  handle id
+app.MapGet("/attack/{id}/{x}/{y}", (
     [FromRoute] Guid id,
     [FromRoute] int x,
     [FromRoute] int y,
     GameServiceRegistry gameServiceRegistry) =>
 {
-    AttackResult result = gameServiceRegistry.GetGameService(id).Attack(x, y);
+    AttackResult result = gameServiceRegistry.GetGameService(id.ToString()).Attack(x, y);
     return result;
 }).WithOpenApi();
 
@@ -62,7 +62,7 @@ app.MapGet("/game/{id}", (
 {
     try
     {
-        return new { id = id, Ships = gameServiceRegistry.GetGameService(id).GetInitialPlayerShips(), gridSize = gameServiceRegistry.GetGameService(id).GetGridSize() };
+        return new { id = id, Ships = gameServiceRegistry.GetGameService(id.ToString()).GetInitialPlayerShips(), gridSize = gameServiceRegistry.GetGameService(id.ToString()).GetGridSize() };
     }
     catch (Exception e)
     {
@@ -76,7 +76,7 @@ app.MapGet("/history/{id}", (
 {
     try
     {
-        return gameServiceRegistry.GetGameService(id).GetMoveHistories();
+        return gameServiceRegistry.GetGameService(id.ToString()).GetMoveHistories();
     }
     catch (Exception e)
     {

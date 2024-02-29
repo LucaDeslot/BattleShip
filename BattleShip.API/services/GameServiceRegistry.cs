@@ -9,9 +9,9 @@ public class GameServiceRegistry
         _gameServices[id] = gameService;
     }
 
-    public IGameService GetGameService(Guid id)
+    public IGameService GetGameService(string id)
     {
-        _gameServices.TryGetValue(id, out var service);
+        _gameServices.TryGetValue(Guid.Parse(id), out var service);
         return service;
     }
 }

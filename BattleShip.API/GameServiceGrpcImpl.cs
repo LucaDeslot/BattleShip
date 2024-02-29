@@ -21,16 +21,34 @@ public class GameServiceGrpcImpl : BattleShipService.BattleShipServiceBase
         
         var response = new StartGameResponse
         {
-            GameId = Guid.NewGuid().ToString(),
+            GameId = gameService.GameId.ToString(),
             Ships = {ConvertShipsToProto(grid)},
             GridSize = gameService.GetGridSize()
         };
         return Task.FromResult(response);
     }
-    
-    private RepeatedField<ShipGRPC> ConvertShipsToProto(List<Ship> ships)
+
+    public override Task<AttackResultGrpc> Attack(AttackRequest request, ServerCallContext context)
     {
-        var protoShips = new RepeatedField<ShipGRPC>();
+        IGameService gameService = _gameServiceRegistry.GetGameService(request.GameId);
+        AttackResult attackResult = gameService.Attack(request.Row, request.Col);
+        CoordinatesGrpc coordinates = new CoordinatesGrpc
+        {
+            Row = attackResult.IACoordinates.X,
+            Col = attackResult.IACoordinates.Y
+        };
+        var result = new AttackResultGrpc {
+            PlayerAttackResult = attackResult.PlayerAttackResult.ToString(),
+            Coordinates = coordinates,
+            IaAttackResult = attackResult.IAAttackResult.ToString(),
+            Winner = attackResult.Winner
+        };
+        return Task.FromResult(result);
+    }
+
+    private RepeatedField<ShipGrpc> ConvertShipsToProto(List<Ship> ships)
+    {
+        var protoShips = new RepeatedField<ShipGrpc>();
         foreach (var ship in ships)
         {
             protoShips.Add(ConvertShipToProto(ship));
@@ -38,9 +56,9 @@ public class GameServiceGrpcImpl : BattleShipService.BattleShipServiceBase
         return protoShips;
     }
     
-    private ShipGRPC ConvertShipToProto(Ship ship)
+    private ShipGrpc ConvertShipToProto(Ship ship)
     {
-        return new ShipGRPC
+        return new ShipGrpc
         {
             Type = ship.Type.ToString(),
             StartRow = ship.StartRow,

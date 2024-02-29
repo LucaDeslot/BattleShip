@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="prototypes\StartGame.proto" GrpcServices="Server" />
+    <Protobuf Include="prototypes\BattleShipService.proto" GrpcServices="Server" />
   </ItemGroup>
 
 </Project>
