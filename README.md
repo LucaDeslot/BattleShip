@@ -2,7 +2,7 @@
 
 ## Aperçu
 
-Ce projet BattleShip est une implémentation moderne et interactive du classique jeu de bataille navale. Il utilise les technologies Blazor WebAssembly pour le frontend et ASP.NET Core pour le backend, offrant une expérience utilisateur riche et réactive entièrement basée sur le web. Le jeu permet aux joueurs de placer stratégiquement leurs navires sur une grille et d'affronter l'ordinateur ou un autre joueur en tentant de couler les navires adverses.
+Ce projet BattleShip est une implémentation moderne et interactive du classique jeu de bataille navale. Il utilise les technologies Blazor WebAssembly pour le frontend et ASP.NET Core pour le backend, offrant une expérience utilisateur riche et réactive entièrement basée sur le web. Le jeu permet d'affronter l'ordinateur tentant de couler les navires adverses.
 
 ## Caractéristiques Principales
 
