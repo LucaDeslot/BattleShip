@@ -26,7 +26,6 @@ var app = builder.Build();
 
 app.UseGrpcWeb(); 
 
-// Configure the HTTP request pipeline.
 app.UseCors();
 
 app.MapGrpcService<GameServiceGrpcImpl>()

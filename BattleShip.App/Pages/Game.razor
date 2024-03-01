@@ -66,8 +66,7 @@
         }
         return null;
     }
-
-    // Gère le clic sur une cellule de la grille
+    
     private async void HandleClick(int row, int col)
     {
         if (grilleIA[row, col] == '\0')
@@ -96,7 +95,7 @@
 
     private async Task RestartGame()
     {
-        await ProtectedLocalStorage.RemoveItemAsync("gameId"); //TODO: Supprimer la partie de l'API
+        await ProtectedLocalStorage.RemoveItemAsync("gameId"); 
         await OnInitializedAsync();
     }
     
