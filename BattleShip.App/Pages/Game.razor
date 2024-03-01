@@ -1,6 +1,7 @@
 @page "/newGame/{difficulty:int}/{username}"
 
 @inject BattleShipService.BattleShipServiceClient BattleShipService
+@inject BattleShipServiceImpl BattleShipHttpService
 @inject Blazored.LocalStorage.ILocalStorageService ProtectedLocalStorage
 @inject NavigationManager NavigationManager
 
