@@ -41,4 +41,3 @@ Ce projet a été développé par :
 
 - **ZUMSTEIN Paulin**
 - **DESLOT Luca**
-Nous espérons que vous apprécierez jouer à BattleShip autant que nous avons apprécié le développer !
