@@ -1,4 +1,3 @@
-using FluentValidation;
 using FluentValidation.Results;
 using Google.Protobuf.Collections;
 using Grpc.Core;
@@ -48,7 +47,7 @@ public class GameServiceGrpcImpl : BattleShipService.BattleShipServiceBase
         var validator = new AttackRequestValidator();
         ValidationResult validationResult = validator.Validate(request);
         
-        if (validationResult.IsValid)
+        if (!validationResult.IsValid)
         {
             var errorMessage = string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage));
             throw new RpcException(new Status(StatusCode.InvalidArgument, errorMessage));

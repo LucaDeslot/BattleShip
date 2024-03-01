@@ -1,6 +1,5 @@
 using BattleShip.API.services;
 using Microsoft.AspNetCore.Mvc;
-using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,10 +7,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddGrpc();
 builder.Services.AddSingleton<GameServiceRegistry>();
-builder.Services.AddTransient<IValidator<AttackRequestGrpc>, AttackRequestValidator>();
-
-
-
 
 builder.Services.AddCors(options =>
 {
